@@ -7,7 +7,6 @@ import { serve } from "inngest/express";
 import { inngest, functions } from "./inngest/index.js"
 
 const app = express();
-const port = 3000;
 
 await connectDB()
 
@@ -16,9 +15,12 @@ app.use(express.json())
 app.use(cors())
 app.use(clerkMiddleware())
 
-
 //API Routes
 app.get('/', (req, res)=>res.send('Server is Live!'))
 app.use('/api/inngest', serve({ client: inngest, functions }))
 
-app.listen(port, ()=>console.log(`Server Listening at http://localhost:${port}`));
+// Remove this line - Vercel handles the server
+// app.listen(port, ()=>console.log(`Server Listening at http://localhost:${port}`));
+
+// Export the app for Vercel
+export default app;

@@ -19,8 +19,5 @@ app.use(clerkMiddleware())
 app.get('/', (req, res)=>res.send('Server is Live!'))
 app.use('/api/inngest', serve({ client: inngest, functions }))
 
-// Remove this line - Vercel handles the server
-// app.listen(port, ()=>console.log(`Server Listening at http://localhost:${port}`));
-
 // Export the app for Vercel
 export default app;

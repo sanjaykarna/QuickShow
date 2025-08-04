@@ -3,18 +3,20 @@ import Show from "../models/Show.js"
 
 
 //Function to check availablity of selected seats for a movie
-const checkSeatAvailablity = async(showId, selectedSeats)=>{
-    try{
-        await Show.findById(showId)
-        if(!showData) return false;
-        const occupiesSeats = showData.occupiesSeats;
-        const isAnySeatTaken = selectedSeats.some(seat=>occupiesSeats[seat]);
+const checkSeatAvailablity = async(showId, selectedSeats) => {
+    
+    try {
+        const showData = await Show.findById(showId);  // <-- FIXED
+        if (!showData) return false;
+        const occupiedSeats = showData.occupiedSeats || {};
+        const isAnySeatTaken = selectedSeats.some(seat => occupiedSeats[seat]);
         return !isAnySeatTaken;
-    }catch(error){
+    } catch (error) {
         console.log(error.message);
         return false;
     }
 }
+
 
 export const createBooking = async(req,res)=>{
     try{

@@ -15,6 +15,7 @@ const SeatLayout = () => {
   const [selectedTime, setselectedTime] = useState(null)
   const [show, setShow] = useState(null)
   const navigate = useNavigate()
+  const [occupiedSeats,setOccupiedSeats] = useState([])
 
   const {axios, getToken, user} = useAppContext();
 
@@ -36,6 +37,9 @@ const SeatLayout = () => {
   if(!selectedSeats.includes(seatId) && selectedSeats.length>4){
     return toast("You can only select 5 seats")
   }
+  if(occupiedSeats.includes(seatId)){
+    return toast('This seat is already booked')
+  }
   setselectedSeats(prev=>prev.includes(seatId)? prev.filter(seat=>seat!==seatId):[...prev,seatId])
 }
   const renderSeats = (row,count = 9)=>(
@@ -44,8 +48,16 @@ const SeatLayout = () => {
       {Array.from({length:count},(_, i)=>{
         const seatId = `${row}${i+1}`;
         return(
-          <button key={seatId} onClick={()=>handleSeatClick(seatId)}
-          className={`h-8 w-8 rounded border border-red-400/60 cursor-pointer ${selectedSeats.includes(seatId) && "bg-red-400 text-white"}`}>{seatId}</button>
+          <button
+  key={seatId}
+  disabled={occupiedSeats.includes(seatId)}
+  onClick={() => handleSeatClick(seatId)}
+  className={`h-8 w-8 rounded border border-red-400/60 
+    ${selectedSeats.includes(seatId) ? "bg-red-400 text-white" : ""}
+    ${occupiedSeats.includes(seatId) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+>
+  {seatId}
+</button>
         );
       })}
 
@@ -53,9 +65,50 @@ const SeatLayout = () => {
 
     </div>
   )
+
+  const getOccupiedSeats = async()=>{
+
+    try{
+      const {data} = await axios.get(`/api/bookings/seats/${selectedTime.showId}`)
+      if(data.success){
+        setOccupiedSeats(data.occupiedSeats)
+      }else{
+        toast.error(data.message)
+      }
+    }catch(error){
+      console.log(error)
+    }
+  }
+
+  const bookTickets = async()=>{
+    try{
+      if(!user) return toast.error('Please login to proceed')
+        if(!selectedSeats || !selectedSeats.length) return toast.error("Please select time and seats")
+        const {data} = await axios.post('/api/bookings/create',{showId:
+      selectedTime.showId, selectedSeats},{headers:{Authorization: `Bearer ${await getToken()}`}});
+
+      if(data.success){
+        toast.success(data.message)
+        navigate('/my-bookings')
+      }else{
+        toast.error(data.message)
+      }
+        
+    }catch(error){
+      toast.error(error.message)
+    }
+  }
+
   useEffect(()=>{
     getShow()
   },[])
+
+  useEffect(()=>{
+    if(selectedTime){
+      getOccupiedSeats()
+    }
+  },[selectedTime])
+
   return show ?(
     <div className='flex flex-col md:flex-row px-6 md:px-16 lg:px-20 py-30 md:pt-35'>
       {/*Available Timings*/}
@@ -93,7 +146,7 @@ const SeatLayout = () => {
       </div>
       </div>
       
-      <button onClick={()=>navigate('/my-bookings')} className='flex items-center 
+      <button onClick={bookTickets} className='flex items-center 
       gap-1 mt-20 px-10 py-3 text-sm bg-red-400 hover:bg-red-950 transition rounded-full font-medium cursor-pointer active:scale-95'>
       Proceed to Checkout
       <ArrowRightIcon strokeWidth={3} className='w-4 h-4'/>
@@ -106,3 +159,4 @@ const SeatLayout = () => {
 }
 
 export default SeatLayout
+

@@ -1,2 +1,15 @@
-node_modules
-.env
+# Server specific configs
+configs/db.js
+
+# Upload directories
+uploads/
+temp/
+
+# Server logs
+logs/
+*.log
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3

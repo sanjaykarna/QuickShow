@@ -23,6 +23,7 @@ console.log(`Registering ${functions.length} Inngest functions:`,
 
 // IMPORTANT: Inngest route MUST come before express.json() middleware
 // because Inngest needs to handle raw request bodies
+app.use('/api/inngest', express.raw({ type: 'application/json' }));
 app.use('/api/inngest', serve({ 
   client: inngest, 
   functions,
@@ -71,5 +72,6 @@ export default app;
 export const config = {
   api: {
     bodyParser: false, // Important: let each route handle its own body parsing
+    externalResolver: true,
   }
 };

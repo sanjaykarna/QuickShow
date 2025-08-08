@@ -33,7 +33,20 @@ const syncUserDeletion = inngest.createFunction(
 )
 
 //Inngest Function to update user data in database
-
+const syncUserUpdation = inngest.createFunction(
+    {id:'update-user-from-clerk'},
+    {event: 'clerk/user.updated'},
+    async({event})=>{
+        const {id,first_name,last_name,email_addresses,image_url} = event.data
+        const userData = {
+            _id:id,
+            email: email_addresses[0].email_address,
+            name: first_name + ' ' + last_name,
+            image: image_url
+        } 
+        await User.findByIdAndUpdate(id,userData) 
+    }
+)
 
 //Inngest function to cancel booking and release seats of show after 10 minutes of booking created if payment not made
 const releaseSeatsAndDeleteBooking = inngest.createFunction(
@@ -65,5 +78,6 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
 export const functions = [
     syncUserCreation,
     syncUserDeletion,
+    syncUserUpdation,
     releaseSeatsAndDeleteBooking
 ];

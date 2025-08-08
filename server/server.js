@@ -23,10 +23,24 @@ console.log(`Registering ${functions.length} Inngest functions:`,
 
 // IMPORTANT: Inngest route MUST come before express.json() middleware
 // because Inngest needs to handle raw request bodies
+
+// Raw body parser middleware for PUT and POST on /api/inngest
+app.use('/api/inngest', (req, res, next) => {
+  if (req.method === 'PUT' || req.method === 'POST') {
+    let data = [];
+    req.on('data', chunk => data.push(chunk));
+    req.on('end', () => {
+      req.rawBody = Buffer.concat(data);
+      next();
+    });
+  } else {
+    next();
+  }
+});
+
 app.use('/api/inngest', serve({ 
   client: inngest, 
   functions,
-  // Add serve options for better Vercel compatibility
   serveHost: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
   servePath: '/api/inngest'
 }));

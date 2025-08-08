@@ -3,8 +3,8 @@ import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './configs/db.js';
 import { clerkMiddleware } from '@clerk/express'
-import { serve } from "inngest/express";
-import { inngest, functions } from "./inngest/index.js"
+import { serve } from 'inngest/express';
+import { inngest, functions } from './inngest/index.js';
 import showRouter from './routes/showRoutes.js';
 import bookingRouter from './routes/bookingRoutes.js';
 import adminRouter from './routes/adminRoutes.js';
@@ -17,27 +17,15 @@ const port = 3000;
 // Initialize database connection
 await connectDB();
 
-// Debug: Log how many functions we're registering
+// Debug: Log functions
 console.log(`Registering ${functions.length} Inngest functions:`, 
   functions.map(f => f.id || 'unnamed'));
 
-// IMPORTANT: Inngest route MUST come before express.json() middleware
-// because Inngest needs to handle raw request bodies
+// *** IMPORTANT ***
+// Add express.raw() middleware BEFORE inngest serve middleware
+app.use('/api/inngest', express.raw({ type: '*/*' }));
 
-// Raw body parser middleware for PUT and POST on /api/inngest
-app.use('/api/inngest', (req, res, next) => {
-  if (req.method === 'PUT' || req.method === 'POST') {
-    let data = [];
-    req.on('data', chunk => data.push(chunk));
-    req.on('end', () => {
-      req.rawBody = Buffer.concat(data);
-      next();
-    });
-  } else {
-    next();
-  }
-});
-
+// Inngest route to handle function invocations
 app.use('/api/inngest', serve({ 
   client: inngest, 
   functions,
@@ -45,19 +33,20 @@ app.use('/api/inngest', serve({
   servePath: '/api/inngest'
 }));
 
-// Stripe webhook route (also needs raw body)
-app.use('/api/stripe', express.raw({type:'application/json'}), stripeWebhooks);
+// Stripe webhook route needs raw body
+app.use('/api/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 
-// Standard middleware (after routes that need raw bodies)
+// After raw body middleware and Inngest routes, add JSON parser and CORS
 app.use(express.json());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.com'] // Replace with your actual frontend domain
-    : ['http://localhost:3000', 'http://localhost:5173'] // Common dev ports
+    ? ['https://your-frontend-domain.com'] // Replace with your frontend domain
+    : ['http://localhost:3000', 'http://localhost:5173'] // Dev origins
 }));
+
 app.use(clerkMiddleware());
 
-// API Routes
+// API routes
 app.get('/', (req, res) => res.send('Server is Live!'));
 app.use('/api/show', showRouter);
 app.use('/api/bookings', bookingRouter);
@@ -73,18 +62,18 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Start server (only in development)
+// Start local server only in development
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
 }
 
-// Export the app for Vercel
+// Export app for Vercel
 export default app;
 
-// Vercel configuration
+// Vercel API config to disable built-in body parser
 export const config = {
   api: {
-    bodyParser: false, // Important: let each route handle its own body parsing
+    bodyParser: false,
     externalResolver: true,
   }
 };

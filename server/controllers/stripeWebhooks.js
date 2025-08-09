@@ -23,34 +23,41 @@ export const stripeWebhooks = async (request, response) => {
 
         switch (event.type) {
 
-            case "checkout.session.completed": {
-                const session = event.data.object;
-                console.log("Checkout Session Completed:", session.id);
-                console.log("Session metadata:", session.metadata);
+        case "checkout.session.completed": {
+        const session = event.data.object;
+        console.log("Checkout Session Completed:", session.id);
+        console.log("Session metadata:", session.metadata);
 
-                const { bookingId } = session.metadata || {};
-                if (!bookingId) {
-                    console.error("No bookingId found in session metadata");
-                    break;
-                }
-                
-                const updatedBooking = await Booking.findByIdAndUpdate(
-                    bookingId,
-                    { isPaid: true, paymentLink: "" },
-                    { new: true }
-                );
+        const { bookingId } = session.metadata || {};
+        if (!bookingId) {
+            console.error("No bookingId found in session metadata");
+            break;
+        }
 
-                if (updatedBooking) {
-                console.log("Booking updated successfully:", updatedBooking._id);
-                await inngest.send({
-                    name: "app/show.booked",
-                    data: { bookingId }
-                });
-                } else {
-                console.error("Booking not found for ID:", bookingId);
-            } 
-                break;
-            }
+        const paymentEmail = session.customer_email || session.customer_details?.email;
+        console.log("Payment email:", paymentEmail);
+
+        const updatedBooking = await Booking.findByIdAndUpdate(
+            bookingId,
+            { 
+                isPaid: true,
+                paymentLink: "",
+                paymentEmail // ✅ save payment-time email
+            },
+            { new: true }
+        );
+
+        if (updatedBooking) {
+            console.log("Booking updated successfully:", updatedBooking._id);
+            await inngest.send({
+                name: "app/show.booked",
+                data: { bookingId }
+            });
+        } else {
+            console.error("Booking not found for ID:", bookingId);
+        }
+        break;
+    }
 
             default:
                 console.log("Unhandled event type:", event.type);

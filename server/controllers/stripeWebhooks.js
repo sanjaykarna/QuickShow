@@ -40,16 +40,17 @@ export const stripeWebhooks = async (request, response) => {
                     { new: true }
                 );
 
-                await inngest.send({
-                    name:"app/show.booked",
-                    data: {bookingId}
-                })
-
                 if (updatedBooking) {
                     console.log("Booking updated successfully:", updatedBooking._id);
                 } else {
                     console.error("Booking not found for ID:", bookingId);
                 }
+
+                 await inngest.send({
+                    name:"app/show.booked",
+                    data: {bookingId}
+                })
+
                 break;
             }
 

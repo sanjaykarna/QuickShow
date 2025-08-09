@@ -14,17 +14,22 @@ import { stripeWebhooks } from './controllers/stripeWebhooks.js';
 const app = express();
 const port = 3000;
 
-// Connect DB first
+// ✅ Connect DB first
 await connectDB();
-
 console.log(`Registering ${functions.length} Inngest functions:`, functions.map(f => f.id || 'unnamed'));
 
-// --- MIDDLEWARE ORDER MATTERS ---
+// --- IMPORTANT: Stripe webhook route FIRST ---
+// Stripe needs raw body for signature verification
+app.post(
+  '/api/stripe',
+  express.raw({ type: 'application/json' }),
+  stripeWebhooks
+);
 
-// Parse JSON body for all routes EXCEPT Stripe webhook
+// ✅ Then JSON body parser for all other routes
 app.use(express.json());
 
-// CORS
+// ✅ CORS for frontend requests (not webhook)
 app.use(
   cors({
     origin:
@@ -34,12 +39,17 @@ app.use(
   })
 );
 
-// Clerk auth middleware (applies after public routes if needed)
+// ✅ Clerk auth middleware
 app.use(clerkMiddleware());
 
 // --- ROUTES ---
+app.get('/', (req, res) => res.send('Server is Live!'));
+app.use('/api/show', showRouter);
+app.use('/api/bookings', bookingRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/user', userRouter);
 
-// Inngest route (now after express.json so sync body is parsed)
+// ✅ Inngest route
 app.use(
   '/api/inngest',
   serve({
@@ -48,33 +58,23 @@ app.use(
   })
 );
 
-// Stripe webhook (raw body for signature verification)
-app.use('/api/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
-
-// API Routes
-app.get('/', (req, res) => res.send('Server is Live!'));
-app.use('/api/show', showRouter);
-app.use('/api/bookings', bookingRouter);
-app.use('/api/admin', adminRouter);
-app.use('/api/user', userRouter);
-
-// Error handler
+// ✅ Error handler
 app.use((error, req, res, next) => {
   console.error('Server Error:', error);
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-// Local dev listener
+// ✅ Local dev listener
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
 }
 
-export default app;
-
-// Disable Vercel’s built-in body parser for webhooks
+// ✅ For Vercel or Next.js serverless — disable built-in body parser for webhooks
 export const config = {
   api: {
     bodyParser: false,
     externalResolver: true,
   },
 };
+
+export default app;

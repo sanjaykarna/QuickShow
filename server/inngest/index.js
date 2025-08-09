@@ -2,7 +2,7 @@ import { Inngest } from "inngest";
 import User from "../models/User.js";
 import Booking from "../models/Booking.js";
 import Show from "../models/Show.js";
-import sendEmail from "../configs/nodeMailer.js";
+import sendEmail from "../configs/nodeMailer.js"; // ✅ Nodemailer function
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "movie-ticket-booking" });
@@ -49,7 +49,7 @@ const syncUserUpdation = inngest.createFunction(
   }
 );
 
-// Inngest function to cancel booking and release seats of show after 10 minutes of booking created if payment not made
+// Inngest function to cancel booking and release seats after 10 minutes if payment not made
 const releaseSeatsAndDeleteBooking = inngest.createFunction(
   { id: "release-seats-delete-booking" },
   { event: "app/checkpayment" },
@@ -81,11 +81,11 @@ const releaseSeatsAndDeleteBooking = inngest.createFunction(
   }
 );
 
-// Inngest function to send email when user books a show
+// Inngest function to send booking confirmation email
 const sendBookingConfirmationEmail = inngest.createFunction(
   { id: "send-booking-confirmation-email" },
   { event: "app/show.booked" },
-  async ({ event, step }) => {
+  async ({ event }) => {
     const { bookingId } = event.data;
     const booking = await Booking.findById(bookingId)
       .populate({
@@ -95,7 +95,7 @@ const sendBookingConfirmationEmail = inngest.createFunction(
       .populate("user");
 
     if (!booking) {
-      console.warn(`Booking not found for ID: ${bookingId} (email sending skipped)`);
+      console.warn(`Booking not found for ID: ${bookingId} (email skipped)`);
       return;
     }
 

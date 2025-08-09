@@ -14,59 +14,62 @@ export const stripeWebhooks = async (request, response) => {
             process.env.STRIPE_WEBHOOK_SECRET
         );
     } catch (error) {
-        console.log(`Webhook signature verification failed:`, error.message);
+        console.error("❌ Webhook signature verification failed:", error.message);
         return response.status(400).send(`Webhook Error: ${error.message}`);
     }
 
     try {
-        console.log("EVENT RECEIVED:", event.type);
+        console.log("📢 Stripe Event Received:", event.type);
 
         switch (event.type) {
 
-        case "checkout.session.completed": {
-        const session = event.data.object;
-        console.log("Checkout Session Completed:", session.id);
-        console.log("Session metadata:", session.metadata);
+            case "checkout.session.completed": {
+                const session = event.data.object;
+                console.log("✅ Checkout Session Completed:", session.id);
+                console.log("Session metadata:", session.metadata);
 
-        const { bookingId } = session.metadata || {};
-        if (!bookingId) {
-            console.error("No bookingId found in session metadata");
-            break;
-        }
+                const { bookingId } = session.metadata || {};
+                if (!bookingId) {
+                    console.error("❌ No bookingId found in session metadata");
+                    break;
+                }
 
-        const paymentEmail = session.customer_email || session.customer_details?.email;
-        console.log("Payment email:", paymentEmail);
+                // Priority: Stripe payment email > booking's saved email
+                const paymentEmail = session.customer_email || session.customer_details?.email;
 
-        const updatedBooking = await Booking.findByIdAndUpdate(
-            bookingId,
-            { 
-                isPaid: true,
-                paymentLink: "",
-                paymentEmail // ✅ save payment-time email
-            },
-            { new: true }
-        );
+                // Update booking
+                const updatedBooking = await Booking.findByIdAndUpdate(
+                    bookingId,
+                    { 
+                        isPaid: true,
+                        paymentLink: "",
+                        email: paymentEmail || undefined // overwrite if payment email exists
+                    },
+                    { new: true }
+                );
 
-        if (updatedBooking) {
-            console.log("Booking updated successfully:", updatedBooking._id);
-            await inngest.send({
-                name: "app/show.booked",
-                data: { bookingId }
-            });
-        } else {
-            console.error("Booking not found for ID:", bookingId);
-        }
-        break;
-    }
+                if (updatedBooking) {
+                    console.log("✅ Booking updated:", updatedBooking._id, "Email:", updatedBooking.email);
+
+                    // Trigger post-booking process (e.g., send confirmation email)
+                    await inngest.send({
+                        name: "app/show.booked",
+                        data: { bookingId: updatedBooking._id.toString() }
+                    });
+                } else {
+                    console.error("❌ Booking not found for ID:", bookingId);
+                }
+                break;
+            }
 
             default:
-                console.log("Unhandled event type:", event.type);
+                console.log("⚠️ Unhandled event type:", event.type);
         }
 
         response.json({ received: true });
 
     } catch (error) {
-        console.error("Webhook processing error:", error);
+        console.error("🔥 Webhook processing error:", error);
         response.status(500).send("Internal server error");
     }
 };

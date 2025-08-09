@@ -33,11 +33,6 @@ export const stripeWebhooks = async (request, response) => {
                     console.error("No bookingId found in session metadata");
                     break;
                 }
-                await inngest.send({
-                    name:"app/show.booked",
-                    data: {bookingId}
-                })
-
                 
                 const updatedBooking = await Booking.findByIdAndUpdate(
                     bookingId,
@@ -46,12 +41,14 @@ export const stripeWebhooks = async (request, response) => {
                 );
 
                 if (updatedBooking) {
-                    console.log("Booking updated successfully:", updatedBooking._id);
+                console.log("Booking updated successfully:", updatedBooking._id);
+                await inngest.send({
+                    name: "app/show.booked",
+                    data: { bookingId }
+                });
                 } else {
-                    console.error("Booking not found for ID:", bookingId);
-                }
-
-                 
+                console.error("Booking not found for ID:", bookingId);
+            } 
                 break;
             }
 

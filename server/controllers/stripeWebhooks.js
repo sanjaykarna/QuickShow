@@ -33,7 +33,12 @@ export const stripeWebhooks = async (request, response) => {
                     console.error("No bookingId found in session metadata");
                     break;
                 }
+                await inngest.send({
+                    name:"app/show.booked",
+                    data: {bookingId}
+                })
 
+                
                 const updatedBooking = await Booking.findByIdAndUpdate(
                     bookingId,
                     { isPaid: true, paymentLink: "" },
@@ -46,11 +51,7 @@ export const stripeWebhooks = async (request, response) => {
                     console.error("Booking not found for ID:", bookingId);
                 }
 
-                 await inngest.send({
-                    name:"app/show.booked",
-                    data: {bookingId}
-                })
-
+                 
                 break;
             }
 

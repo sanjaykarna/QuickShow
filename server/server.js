@@ -46,6 +46,7 @@ app.use(
 // ✅ Clerk auth middleware
 app.use(clerkMiddleware());
 
+
 // --- ROUTES ---
 app.get('/', (req, res) => res.send('Server is Live!'));
 app.use('/api/show', showRouter);

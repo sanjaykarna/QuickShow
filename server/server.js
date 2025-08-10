@@ -34,7 +34,7 @@ app.use(
   cors({
     origin:
       process.env.NODE_ENV === 'production'
-        ? ['https://quickshow-ashen-alpha.vercel.app/admin']
+        ? ['https://quickshow-ashen-alpha.vercel.app']
         : ['http://localhost:3000', 'http://localhost:5173'],
   })
 );

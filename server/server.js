@@ -32,12 +32,16 @@ app.use(express.json());
 // ✅ CORS for frontend requests (not webhook)
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === 'production'
-        ? ['https://quickshow-ashen-alpha.vercel.app']
-        : ['http://localhost:3000', 'http://localhost:5173'],
+    origin: [
+      'https://quickshow-ashen-alpha.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:5173'
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
   })
 );
+
 
 // ✅ Clerk auth middleware
 app.use(clerkMiddleware());

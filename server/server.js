@@ -69,7 +69,7 @@ app.use((error, req, res, next) => {
 });
 
 // ✅ Local dev listener
-if (process.env.NODE_ENV !== 'production') {
+if (!process.env.VERCEL && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   app.listen(port, () => console.log(`Server running on http://localhost:${port}`));
 }
 

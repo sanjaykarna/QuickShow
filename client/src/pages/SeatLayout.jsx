@@ -109,7 +109,7 @@ const SeatLayout = () => {
   },[selectedTime])
 
   return show ?(
-    <div className='flex flex-col md:flex-row px-6 md:px-16 lg:px-20 py-30 md:pt-35'>
+    <div className='flex flex-col md:flex-row px-6 md:px-16 lg:px-20 pt-20 md:pt-28'>
       {/*Available Timings*/}
       <div className='w-60 bg-red-400/10 border border-red-400/20 rounded-lg py-10
       h-max md:sticky md:top-30'>

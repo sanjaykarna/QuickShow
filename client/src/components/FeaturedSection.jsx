@@ -46,21 +46,23 @@ const FeaturedSection = () => {
                 </button>
             </div>
             
-            {/* Movie Grid - MORE AGGRESSIVE FIX */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16 mt-8 p-8'>
-                {shows.slice(0, 4).map((show) => (
+            {/* Movie Grid - For 2 cards */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-8 mt-8 max-w-4xl mx-auto'>
+                {shows.slice(0, 4).map((show, index) => (
                     <div 
                         key={show._id}
-                        className='relative group cursor-pointer min-h-[400px] flex flex-col'
+                        className='relative group cursor-pointer'
                     >
-                        {/* Constrained container */}
-                        <div className='relative h-full overflow-hidden rounded-lg'>
-                            {/* Card with NO scaling for now */}
-                            <div className='h-full w-full relative z-10 group-hover:z-20 
-                                          transition-all duration-300 group-hover:brightness-110 
-                                          group-hover:-translate-y-1'>
-                                <MovieCard movie={show} />
-                            </div>
+                        {/* Card container with proper spacing */}
+                        <div className='relative transform transition-all duration-300 
+                                      group-hover:scale-102 group-hover:-translate-y-1 
+                                      group-hover:z-10 h-auto'>
+                            <MovieCard movie={show} />
+                            
+                            {/* Subtle glow effect */}
+                            <div className='absolute inset-0 bg-red-500/10 rounded-lg blur-lg 
+                                          opacity-0 group-hover:opacity-100 transition-opacity duration-300 
+                                          -z-10 scale-110'></div>
                         </div>
                     </div>
                 ))}

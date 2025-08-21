@@ -46,25 +46,21 @@ const FeaturedSection = () => {
                 </button>
             </div>
             
-            {/* Movie Grid - FIXED VERSION */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 mt-8 px-4'>
+            {/* Movie Grid - MORE AGGRESSIVE FIX */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-16 mt-8 p-8'>
                 {shows.slice(0, 4).map((show) => (
                     <div 
                         key={show._id}
-                        className='relative group cursor-pointer'
+                        className='relative group cursor-pointer min-h-[400px] flex flex-col'
                     >
-                        {/* Container that maintains space */}
-                        <div className='relative overflow-visible'>
-                            {/* Card with contained scaling */}
-                            <div className='transform group-hover:scale-105 transition-all duration-300 
-                                          origin-center relative z-10 group-hover:z-20'>
+                        {/* Constrained container */}
+                        <div className='relative h-full overflow-hidden rounded-lg'>
+                            {/* Card with NO scaling for now */}
+                            <div className='h-full w-full relative z-10 group-hover:z-20 
+                                          transition-all duration-300 group-hover:brightness-110 
+                                          group-hover:-translate-y-1'>
                                 <MovieCard movie={show} />
                             </div>
-                            
-                            {/* Optional: Add subtle shadow effect */}
-                            <div className='absolute inset-0 bg-red-500/20 rounded-lg blur-xl 
-                                          opacity-0 group-hover:opacity-100 transition-opacity duration-300 
-                                          transform scale-110 -z-10'></div>
                         </div>
                     </div>
                 ))}

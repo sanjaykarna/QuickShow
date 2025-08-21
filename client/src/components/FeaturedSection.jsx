@@ -37,23 +37,35 @@ const FeaturedSection = () => {
                 {/* Enhanced View All Button */}
                 <button 
                     onClick={handleViewAll}
-                    className='group flex items-center gap-2 text-sm text-gray-400 hover:text-red-400 
-                             transition-all duration-300 cursor-pointer px-4 py-2 rounded-lg
+                    className='group flex items-center gap-2 text-sm text-gray-400 hover:text-red-400
+                              transition-all duration-300 cursor-pointer px-4 py-2 rounded-lg
                              border border-gray-700 hover:border-red-500/50 hover:bg-red-500/10'
                 >
                     View All 
                     <ArrowRight className='group-hover:translate-x-1 transition-transform duration-300 w-4 h-4'/>
                 </button>
             </div>
-              
-            {/* Movie Grid */}
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-8'>
+            
+            {/* Movie Grid - FIXED VERSION */}
+            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 mt-8 px-4'>
                 {shows.slice(0, 4).map((show) => (
                     <div 
                         key={show._id}
-                        className='transform hover:scale-105 transition-transform duration-300'
+                        className='relative group cursor-pointer'
                     >
-                        <MovieCard movie={show} />
+                        {/* Container that maintains space */}
+                        <div className='relative overflow-visible'>
+                            {/* Card with contained scaling */}
+                            <div className='transform group-hover:scale-105 transition-all duration-300 
+                                          origin-center relative z-10 group-hover:z-20'>
+                                <MovieCard movie={show} />
+                            </div>
+                            
+                            {/* Optional: Add subtle shadow effect */}
+                            <div className='absolute inset-0 bg-red-500/20 rounded-lg blur-xl 
+                                          opacity-0 group-hover:opacity-100 transition-opacity duration-300 
+                                          transform scale-110 -z-10'></div>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -72,7 +84,7 @@ const FeaturedSection = () => {
 
             {/* Loading state */}
             {shows.length === 0 && (
-                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 mt-8'>
+                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 mt-8'>
                     {[...Array(4)].map((_, i) => (
                         <div key={i} className='animate-pulse'>
                             <div className='bg-gray-700/50 rounded-lg h-96 mb-4'></div>

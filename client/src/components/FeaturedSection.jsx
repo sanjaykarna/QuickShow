@@ -49,24 +49,31 @@ const FeaturedSection = () => {
       </div>
 
       {/* Movie Grid - responsive aligned cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-8">
-        {shows.slice(0, 4).map((show) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 mt-8">
+        {shows.slice(0, 4).map((show, index) => (
           <div
             key={show._id}
-            className="relative group cursor-pointer h-full"
+            className="relative group cursor-pointer"
+            style={{ zIndex: 1 }}
           >
             <div
               className="relative transform transition-all duration-300 
-                         group-hover:scale-[1.02] group-hover:-translate-y-1 
-                         group-hover:z-10 h-full"
+                         group-hover:scale-105 group-hover:-translate-y-2"
+              style={{ zIndex: 'auto' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.parentElement.style.zIndex = '50'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.parentElement.style.zIndex = '1'
+              }}
             >
               <MovieCard movie={show} />
 
               {/* Subtle glow effect */}
               <div
-                className="absolute inset-0 bg-red-500/10 rounded-lg blur-lg 
+                className="absolute inset-0 bg-red-500/20 rounded-lg blur-xl 
                            opacity-0 group-hover:opacity-100 transition-opacity duration-300 
-                           -z-10 scale-110"
+                           -z-10"
               />
             </div>
           </div>
